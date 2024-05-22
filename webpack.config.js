@@ -1,66 +1,27 @@
-/**
- * Webpack configuration.
- */
 
-// WordPress dependencies
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const { merge } = require( 'webpack-merge' );
 
-// External dependencies
-const path = require( 'path' );
-const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
-const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
-const TerserPlugin = require("terser-webpack-plugin");
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
-const RtlCssPlugin = require( 'rtlcss-webpack-plugin' );
+// get default configs
+const [ scriptConfig, moduleConfig ] = defaultConfig;
 
-// JS Directory path.
-const SRC_DIR 	= path.resolve( __dirname, 'assets/src' );
-const BUILD_DIR = path.resolve( __dirname, 'assets/build' );
-
-const entry = {
-	public: SRC_DIR + '/public/index.js',
-};
-const output = {
-	path: BUILD_DIR,
-	filename: '[name]/index.js'
+/**
+ * Override script config
+ * the script config is the default config, which is used with or without the --experimental-modules flag
+ */
+const scriptConfigOverride = {
+	// your configuration here
 };
 
-//Remove default MiniCssExtractPlugin settings
-defaultConfig.plugins = defaultConfig.plugins.filter((plugin) => {
-	return !(plugin instanceof MiniCssExtractPlugin);
-});
-defaultConfig.plugins = defaultConfig.plugins.filter((plugin) => {
-	return !(plugin instanceof RtlCssPlugin);
-});
+/**
+ * Override modules config
+ * the module config is used for all scripts that are loaded via "viewScriptModule" in the block.json
+ */
+const moduleConfigOverride = {
+	// your configuration here
+};
 
-const isProduction = process.env.NODE_ENV === 'production';
-
-module.exports = {
-	...defaultConfig,
-	entry: entry,
-	output: output,
-	module: {
-		...defaultConfig.module,
-		rules: [
-			...defaultConfig.module.rules,
-		],
-	},
-	optimization: {
-		minimize: isProduction,
-		minimizer: [
-			'...',
-			new TerserPlugin(),
-			new CssMinimizerPlugin()
-		]
-	},
-	plugins: [
-		...defaultConfig.plugins,
-		new MiniCssExtractPlugin({
-			filename: "[name]/index.css",
-		}),
-		new RtlCssPlugin({
-			filename: "[name]/index-rtl.css",
-		}),
-		new RemoveEmptyScriptsPlugin(),
-	],
-}
+module.exports = [
+	merge( scriptConfig, scriptConfigOverride ),
+	merge( moduleConfig, moduleConfigOverride ),
+];
