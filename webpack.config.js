@@ -1,27 +1,34 @@
+const [scriptConfig, moduleConfig] = require('@wordpress/scripts/config/webpack.config');
+const { getWebpackEntryPoints } = require('@wordpress/scripts/utils/config');
 
-const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
-const { merge } = require( 'webpack-merge' );
+// External dependencies
+const path = require( 'path' );
+const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
-// get default configs
-const [ scriptConfig, moduleConfig ] = defaultConfig;
+// JS Directory path.
+const SRC_DIR 	= path.resolve( __dirname, 'src' );
 
-/**
- * Override script config
- * the script config is the default config, which is used with or without the --experimental-modules flag
- */
-const scriptConfigOverride = {
-	// your configuration here
-};
-
-/**
- * Override modules config
- * the module config is used for all scripts that are loaded via "viewScriptModule" in the block.json
- */
-const moduleConfigOverride = {
-	// your configuration here
+const entry = {
+	...getWebpackEntryPoints('script')(),
+	public: SRC_DIR + '/public/index.js'
 };
 
 module.exports = [
-	merge( scriptConfig, scriptConfigOverride ),
-	merge( moduleConfig, moduleConfigOverride ),
+	{
+	...scriptConfig,
+	entry: entry,
+	optimization: {
+		...scriptConfig.optimization,
+		minimizer: [
+			...scriptConfig.optimization.minimizer,
+			new CssMinimizerPlugin()
+		]
+	},
+	plugins: [
+		...scriptConfig.plugins,
+		new RemoveEmptyScriptsPlugin(),
+	],
+	},
+	moduleConfig,
 ];
